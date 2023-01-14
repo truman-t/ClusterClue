@@ -173,7 +173,20 @@ def clusterClue(ra, de, radius, distance, validator, r_fraction=3, dist_fraction
     
     Returns
     -------
-    DataFrame with information about the clusters of the sky region 
+    DataFrame with information about the clusters found. The columns are:
+    	source_id: star id
+    	ra: star right ascension (degrees)
+    	dec: star declination (degrees)
+    	parallax: star parallax (mas)  
+    	parallax_error: parallax error (mas)
+    	r_med_photogeo: distance (pc)
+    	pmra: proper motion in right ascension (mas/yr)
+    	pmdec: proper motion in declination (mas/yr)
+    	cluster: cluster of the star
+    	phot_g_mean_mag: G magnitude
+    	bp_rp: colour
+    	validation: cluster validation score
+    	membership_prob: star membership probability
     """
     
     # Search astrometric data
@@ -243,7 +256,7 @@ def clusterClue(ra, de, radius, distance, validator, r_fraction=3, dist_fraction
         if distances[len(distances)//2 - 1]>20:
             removed.append(c)
     remain = [x for x in clusts if x not in removed]
-    # stop if there are no candidates left
+    # check if any candidate left
     if len(remain)==0:
         return label
     result = result[result.cluster.isin(remain)] # free incompatible candidates
@@ -267,7 +280,7 @@ def clusterClue(ra, de, radius, distance, validator, r_fraction=3, dist_fraction
         val_result = validator.predict(cmds, verbose=False)
     val_result = val_result.reshape(-1).tolist()
     clusters_validation = {x[0]:x[1] for x in zip(candidates.keys(), val_result) if x[1]>=0.5} # select validated clusters and their validation score
-    # return label if there is no validated clusters
+    # check if any validated cluster
     if len(clusters_validation.keys())==0:
         return label
     result = result[result.cluster.isin(clusters_validation.keys())] # free not validated candidates
